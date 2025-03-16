@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprends à Lire</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .title {
+            text-align: center;
+            color: #6610f2;
+            margin-bottom: 30px;
+        }
+        .card {
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .card-header {
+            background-color: #ffc107;
+            color: #212529;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        .phrase {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .option-card {
+            width: 120px;
+            height: 150px; /* Ajusté pour inclure le texte sous l'image */
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Empêche l'image de déborder */
+        }
+        .option-card:hover {
+            transform: scale(1.05);
+            border: 2px solid #ffc107;
+        }
+        .option-card.correct {
+            background-color: #28a745;
+            color: white;
+        }
+        .option-card.incorrect {
+            background-color: #dc3545;
+            color: white;
+        }
+        .option-icon {
+            width: 100%; /* L'image occupe toute la largeur de la carte */
+            height: 80px; /* Hauteur fixe pour l'image */
+            object-fit: cover; /* Redimensionne l'image pour qu'elle s'adapte */
+            border-radius: 10px 10px 0 0; /* Coins arrondis uniquement en haut */
+        }
+        .option-text {
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 5px;
+        }
+        .progress {
+            height: 20px;
+            margin-bottom: 20px;
+        }
+        .result-message {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            display: none;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .stars-container {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2rem;
+        }
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #f0f;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="celebration" id="celebration"></div>
+
+    <div class="app-container">
+        <div class="title">
+            <h1><i class="fas fa-book-open me-2"></i>Apprends à Lire</h1>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar bg-success" role="progressbar" style="width: 10%;" id="progress-bar">1/10</div>
+        </div>
+
+        <div class="stars-container">
+            <span id="stars"></span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                Question <span id="question-number">1</span>/10
+            </div>
+            <div class="card-body">
+                <div class="phrase" id="phrase">Le chat mange une souris.</div>
+                <div class="result-message" id="result-message"></div>
+                <div class="options" id="options">
+                    <!-- Les options seront générées dynamiquement -->
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button class="btn btn-secondary" id="prev-btn" disabled>
+                <i class="fas fa-arrow-left me-2"></i>Précédent
+            </button>
+            <button class="btn btn-primary" id="next-btn" disabled>
+                Suivant<i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Données des questions
+        const questions = [
+    {
+        phrase: "Le chat mange une souris.",
+        options: [
+            { image: "https://www.victorpest.com/media/Articles/Victorpest/vp_cat_eat_iStock_000012416837.jpg", text: "Chat qui mange", correct: true },
+            { image: "https://www.fourpaws.com/-/media/Project/OneWeb/FourPaws/Images/articles/family-matters/dog-playtime/dog-playtime-927x388.jpg", text: "Chien qui joue" },
+            { image: "https://cdn.prod.website-files.com/5e8ffd61d516146f7ddc860b/5f5fab69de07da66b4c9c40c_Northern-Parula_1.jpg", text: "Oiseau qui chante" },
+            { image: "https://www.shutterstock.com/image-photo/goldfish-have-two-sets-paired-260nw-2474222239.jpg", text: "Poisson qui nage" }
+        ]
+    },
+    {
+        phrase: "La fille boit du lait.",
+        options: [
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBhTQI4qIHd-UVaYYVgT1demOx5bxZCgeMlWqVI8Ic7xpP9Hh0UA7WjP3th2CI_0XnShA&usqp=CAU", text: "Boire du café" },
+            { image: "https://experiencelife.lifetime.life/wp-content/uploads/2021/09/drink-to-your-health.jpg", text: "Boire de l'eau" },
+            { image: "https://media.istockphoto.com/id/1044742364/photo/happy-child-eating-ice-cream-outdoors-in-summer.jpg?s=612x612&w=0&k=20&c=KEwaitEQRbqMZD9-FtpYa8R4oCvISjCCqQcSv9NUW-E=", text: "Manger une glace" },
+            { image: "https://cdn-prod.medicalnewstoday.com/content/images/articles/317/317859/a-baby-drinking-milk.jpg", text: "Boire du lait", correct: true }
+        ]
+    },
+    {
+        phrase: "Le chien court dans le parc.",
+        options: [
+            { image: "https://www.treehugger.com/thmb/tG2Hw_eDpqOW0lNf4aSWl6u7VdI=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/a-jack-russell-running-in-a-park-908007556-1e8024f051ea49be83b44f5680e69e31.jpg", text: "Chien qui court", correct: true },
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqB9VjBnYaBV4P__DfkrXDUmsv4M0tlR5JBQ&s", text: "Chat qui dort" },
+            { image: "https://d2rqvd0kuag1qx.cloudfront.net/blog-8.jpg", text: "Oiseau qui vole" },
+            { image: "https://static.vecteezy.com/system/resources/previews/036/026/263/non_2x/cute-fish-swimming-in-water-vector.jpg", text: "Poisson qui nage" }
+        ]
+    },
+    {
+        phrase: "L'oiseau vole dans le ciel.",
+        options: [
+            { image: "https://img.src.ca/2013/10/08/1250x703/131008_v037v_martinet-ventre-blanc_sn1250.jpg", text: "Oiseau qui vole", correct: true },
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl23crzNMe18QmyI-hbYk1kKJ2CjYP54A8Iw&s", text: "Avion qui vole" },
+            { image: "https://img.20mn.fr/eHVFMsH2SnaZrohazM44Gyk/1444x920_nuages-perpetuelle-transformation", text: "Nuages dans le ciel" },
+            { image: "https://data.pixiz.com/output/user/frame/preview/api/big/0/5/2/6/1626250_2ab0d.jpg", text: "Soleil qui brille" }
+        ]
+    },
+    {
+        phrase: "Le garçon lance une balle.",
+        options: [
+            { image: "https://activeforlife.com/content/uploads/2018/05/boy-throwing-2123x1417.jpg", text: "Garçon qui lance", correct: true },
+            { image: "https://media.istockphoto.com/id/1180164682/fr/photo/photo-pleine-longueur-de-la-jolie-petite-dame-sautant-lhumeur-d%C3%A9t%C3%A9-%C3%A9lev%C3%A9e-excit%C3%A9e-%C3%A9coutant-la.jpg?s=612x612&w=0&k=20&c=TS8cp2Xt-Q7Y6tkrMsbh-LkhQvnv5Sd-WBgKDvyLg7s=", text: "Fille qui saute" },
+            { image: "https://www.thesprucepets.com/thmb/inq97JI7e19y6DleHwOZmgpl5FQ=/3000x0/filters:no_upscale():strip_icc()/BorderCollieHillaryKladke-be31fca2c4b44290a00f830525fd89a8.jpg", text: "Chien qui court" },
+            { image: "https://play-lh.googleusercontent.com/4LpOnHmBq_9Ri0JwMoEanLAGg0QSBqMSDPHXw4ymclDARDzNmohSu9K4veR5EgSMzs_T", text: "Balle qui roule" }
+        ]
+    },
+    {
+        phrase: "La tortue marche lentement.",
+        options: [
+            { image: "https://media.istockphoto.com/id/1446179609/photo/cute-mediterranean-tortoise-walking-on-the-road-on-a-sunny-day.jpg?s=612x612&w=0&k=20&c=a8I_qvuN_qznpZvPHz_bhl4QdXtClwSKrS0FKOTGGH8=", text: "Tortue qui marche", correct: true },
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRodn2T8e3m1J9rqI3a3EpQQ2mCISHi8Gpshg&s", text: "Lapin qui saute" },
+            { image: "https://thumbs.dreamstime.com/b/rampe-d-escargot-dans-une-corniche-lente-mouvement-habitat-naturel-photo-circulation-air-g%C3%A9n%C3%A9ratif-313327879.jpg", text: "Escargot qui rampe" },
+            { image: "https://ampascachi.com/images/blog/todo-sobre-caballos/aires-del-caballo/galope.jpg", text: "Cheval qui galope" }
+        ]
+    },
+    {
+        phrase: "Le bébé pleure fort.",
+        options: [
+            { image: "https://www.pourquoidocteur.fr/media/article/COPY_bbb-1584028987.jpg", text: "Bébé qui pleure", correct: true },
+            { image: "https://media.istockphoto.com/id/149051793/fr/photo/joyeux-petit-gar%C3%A7on.jpg?s=612x612&w=0&k=20&c=eoVPyLzyJxVXmjI8wvrlub5EhBhtXy6rY6BVaEkfoBQ=", text: "Bébé qui rit" },
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpocC2SGs5TDfVHix_cDjRTBC-iMV_6Cn15A&s", text: "Bébé qui dort" },
+            { image: "https://i0.wp.com/www.programme-malin.com/wp-content/uploads/2023/07/10-astuces-pour-quil-mange-de-tout-gravit.jpg?fit=1920%2C1080&ssl=1", text: "Bébé qui mange" }
+        ]
+    },
+    {
+        phrase: "La maîtresse écrit au tableau.",
+        options: [
+            { image: "https://as2.ftcdn.net/jpg/04/19/57/55/1000_F_419575573_E8YdABOVANVO3hglaQ0DHOh1gPunT99Y.jpg", text: "Maîtresse qui écrit", correct: true },
+            { image: "https://www.readingplus.com/wp-content/uploads/2021/04/Relationship-Between-a-Silent-Reading-Fluency-Instructional-Protocol.jpg", text: "Élève qui lit" },
+            { image: "https://www.thesprucecrafts.com/thmb/TJt0u47H9d6wdajgPvRzW_Ne3sA=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-922707682-5b90467bc9e77c0025931eef.jpg", text: "Artiste qui peint" },
+            { image: "https://t3.ftcdn.net/jpg/01/58/43/62/360_F_158436240_MlYWw8r5uxu6lmUkZe9SdquVd5abyEsB.jpg", text: "Élève qui dessine" }
+        ]
+    },
+    {
+        phrase: "Le poisson nage dans l'eau.",
+        options: [
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy3lwnCLVi5ygMmPIBzmKs6PENP7sjeUGZ3Q&s", text: "Poisson qui nage", correct: true },
+            { image: "https://images.contentstack.io/v3/assets/blt62d40591b3650da3/blt9129383d106ead6b/658ee2c07d6d2ef8f3b8d15f/hero_PN1177_BoatShallowWater_Banner.jpg", text: "Bateau sur l'eau" },
+            { image: "https://www.mramphibian.com/wp-content/uploads/2022/01/frog-jumping.jpg", text: "Grenouille qui saute" },
+            { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2ntB4JFFp_nEJE8gu1H4riL4QVqz7-ObBAA&s", text: "Canard qui flotte" }
+        ]
+    },
+    {
+        phrase: "La voiture roule vite.",
+        options: [
+            { image: "https://cdn-fastly.autoguide.com/media/2023/07/04/13469731/tips-to-keep-your-car-engine-running-its-best.jpg?size=720x845&nocrop=1", text: "Voiture qui roule", correct: true },
+            { image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Scottsdale_Exchange_%2820221119_184838406%29.jpg/1200px-Scottsdale_Exchange_%2820221119_184838406%29.jpg", text: "Bus qui s'arrête" },
+            { image: "https://hips.hearstapps.com/runnersworld-uk/i/15829/cyclingrunning.jpg", text: "Vélo qui roule" },
+            { image: "https://images.theconversation.com/files/578175/original/file-20240227-28-cejldv.jpg?ixlib=rb-4.1.0&rect=0%2C0%2C7668%2C3828&q=45&auto=format&w=1356&h=668&fit=crop", text: "Avion qui vole" }
+        ]
+    }
+];
+        // Variables globales
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = [];
+        let stars = "";
+
+        // Fonction pour initialiser le jeu
+        function initGame() {
+            answered = new Array(questions.length).fill(false);
+            updateQuestion();
+        }
+
+        // Fonction pour mettre à jour la question affichée
+        function updateQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById("question-number").textContent = currentQuestion + 1;
+            document.getElementById("phrase").textContent = question.phrase;
+            document.getElementById("result-message").style.display = "none";
+            document.getElementById("progress-bar").style.width = `${(currentQuestion + 1) * 10}%`;
+            document.getElementById("progress-bar").textContent = `${currentQuestion + 1}/10`;
+
+            // Générer les options
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+            
+            // Mélanger les options
+            const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+            
+            shuffledOptions.forEach((option, index) => {
+                const optionCard = document.createElement("div");
+                optionCard.className = "option-card";
+                optionCard.innerHTML = `
+                    <img src="${option.image}" class="option-icon" alt="${option.text}">
+                    <div class="option-text">${option.text}</div>
+                `;
+                
+                optionCard.addEventListener("click", function() {
+                    if (answered[currentQuestion]) return; // Éviter les clics multiples
+                    
+                    answered[currentQuestion] = true;
+                    
+                    if (option.correct) {
+                        optionCard.classList.add("correct");
+                        document.getElementById("result-message").textContent = "Bravo ! C'est correct !";
+                        document.getElementById("result-message").style.color = "#28a745";
+                        score++;
+                        stars += "⭐";
+                        document.getElementById("stars").textContent = stars;
+                        createConfetti();
+                    } else {
+                        optionCard.classList.add("incorrect");
+                        document.getElementById("result-message").textContent = "Oups ! Essaye encore !";
+                        document.getElementById("result-message").style.color = "#dc3545";
+                        
+                        // Montrer la bonne réponse
+                        shuffledOptions.forEach((opt, i) => {
+                            if (opt.correct) {
+                                document.querySelectorAll(".option-card")[i].classList.add("correct");
+                            }
+                        });
+                    }
+                    
+                    document.getElementById("result-message").style.display = "block";
+                    document.getElementById("next-btn").disabled = false;
+                });
+                
+                optionsContainer.appendChild(optionCard);
+            });
+            
+            // Mettre à jour les boutons de navigation
+            document.getElementById("prev-btn").disabled = currentQuestion === 0;
+            document.getElementById("next-btn").disabled = !answered[currentQuestion];
+        }
+
+        // Fonction pour passer à la question suivante
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                updateQuestion();
+            } else {
+                // Fin du jeu
+                showFinalResult();
+            }
+        }
+
+        // Fonction pour revenir à la question précédente
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                updateQuestion();
+            }
+        }
+
+        // Fonction pour afficher le résultat final
+        function showFinalResult() {
+            const phraseElement = document.getElementById("phrase");
+            const optionsContainer = document.getElementById("options");
+            const resultMessage = document.getElementById("result-message");
+            
+            phraseElement.style.fontSize = "2rem";
+            phraseElement.innerHTML = `
+                <p>Tu as terminé !</p>
+                <p>Ton score : ${score}/10</p>
+                <div style="font-size: 3rem; margin: 20px 0;">${stars}</div>
+            `;
+            
+            optionsContainer.innerHTML = "";
+            resultMessage.style.display = "none";
+            
+            document.getElementById("next-btn").disabled = true;
+            
+            // Afficher un message en fonction du score
+            let message = "";
+            if (score === 10) {
+                message = "Parfait ! Tu es un super lecteur !";
+                createConfetti();
+            } else if (score >= 7) {
+                message = "Très bien ! Continue comme ça !";
+            } else if (score >= 5) {
+                message = "Pas mal ! Continue à t'entraîner !";
+            } else {
+                message = "Continue à t'entraîner, tu vas y arriver !";
+            }
+            
+            const messageElement = document.createElement("div");
+            messageElement.style.fontSize = "1.5rem";
+            messageElement.style.marginTop = "20px";
+            messageElement.style.color = "#6610f2";
+            messageElement.textContent = message;
+            optionsContainer.appendChild(messageElement);
+
+            // Ajouter un bouton pour recommencer
+            const restartButton = document.createElement("button");
+            restartButton.className = "btn btn-primary btn-lg mt-4";
+            restartButton.innerHTML = '<i class="fas fa-redo me-2"></i>Recommencer';
+            restartButton.onclick = function() {
+                currentQuestion = 0;
+                score = 0;
+                stars = "";
+                document.getElementById("stars").textContent = "";
+                answered = new Array(questions.length).fill(false);
+                updateQuestion();
+            };
+            optionsContainer.appendChild(restartButton);
+        }
+
+        // Fonction pour créer l'effet de confettis
+        function createConfetti() {
+            const celebration = document.getElementById("celebration");
+            celebration.innerHTML = "";
+            celebration.style.display = "block";
+            
+            const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement("div");
+                confetti.className = "confetti";
+                confetti.style.left = Math.random() * 100 + "%";
+                confetti.style.top = -20 + "px";
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.transform = "rotate(" + Math.random() * 360 + "deg)";
+                
+                celebration.appendChild(confetti);
+                
+                // Animation de chute
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 2;
+                
+                confetti.animate(
+                    [
+                        { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+                        { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                    ],
+                    {
+                        duration: duration * 1000,
+                        delay: delay * 1000,
+                        easing: 'linear',
+                        iterations: 1,
+                        fill: 'forwards'
+                    }
+                );
+            }
+            
+            // Supprimer les confettis après l'animation
+            setTimeout(() => {
+                celebration.style.display = "none";
+            }, 5000);
+        }
+
+        // Ajouter les écouteurs d'événements
+        document.getElementById("next-btn").addEventListener("click", nextQuestion);
+        document.getElementById("prev-btn").addEventListener("click", prevQuestion);
+
+        // Initialiser le jeu
+        initGame();
+    </script>
+</body>
+</html>
