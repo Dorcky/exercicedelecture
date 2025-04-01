@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Dictée</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .dictee-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .word-display {
+            height: 60px;
+            font-size: 2rem;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .word-image {
+            height: 200px;
+            width: 100%;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .progress-container {
+            margin: 20px 0;
+        }
+        .word-input {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            height: 50px;
+        }
+        .word-management {
+            margin-top: 30px;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            display: none;
+        }
+        #wordList {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .french-keyboard {
+            display: none;
+            margin-top: 20px;
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .keyboard-key {
+            padding: 8px 12px;
+            margin: 0 3px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .keyboard-key:hover {
+            background-color: #e9e9e9;
+        }
+        .keyboard-key.special {
+            background-color: #e0e0e0;
+        }
+        .keyboard-key.space {
+            width: 300px;
+        }
+        .balloon {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 0, 0, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        .word-checkbox {
+            margin-right: 10px;
+        }
+        @media (max-width: 576px) {
+            .word-display {
+                font-size: 1.5rem;
+            }
+            .word-input {
+                font-size: 1.2rem;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .controls button {
+                width: 100%;
+            }
+            .keyboard-key {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+            }
+            .keyboard-key.space {
+                width: 200px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            .button-group .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container dictee-container">
+        <h1 class="text-center mb-4">Application de Dictée</h1>
+        
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="progress-container">
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small id="currentProgress">0/0</small>
+                        <small id="score">Score: 0</small>
+                    </div>
+                </div>
+                
+                <img id="wordImage" src="https://via.placeholder.com/400x200?text=Image+du+mot" alt="Image du mot" class="word-image">
+                <div id="wordDisplay" class="word-display">_____</div>
+                <input type="text" id="wordInput" class="form-control word-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+                <div class="controls d-flex justify-content-between flex-wrap">
+                    <button id="listenBtn" class="btn btn-primary">
+                        <i class="bi bi-volume-up"></i>
+                        Écouter
+                    </button>
+                    <button id="revealBtn" class="btn btn-warning">
+                        <i class="bi bi-eye"></i>
+                        Révéler
+                    </button>
+                    <button id="nextBtn" class="btn btn-success">
+                        <i class="bi bi-arrow-right"></i>
+                        Suivant
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Groupe de boutons pour la gestion et le clavier -->
+        <div class="button-group">
+            <button id="toggleManagementBtn" class="btn btn-info">
+                <i class="bi bi-gear"></i>
+                Gestion des mots
+            </button>
+            <button id="showKeyboardBtn" class="btn btn-secondary">
+                <i class="bi bi-keyboard"></i> Clavier français
+            </button>
+        </div>
+
+        <!-- Section de gestion des mots (masquée par défaut) -->
+        <div id="wordManagementSection" class="card word-management">
+            <div class="card-header">
+                <h5>Gestion des mots</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="newWord" class="form-label">Ajouter un nouveau mot</label>
+                    <div class="input-group">
+                        <input type="text" id="newWord" class="form-control" placeholder="Nouveau mot">
+                        <input type="text" id="imageUrl" class="form-control" placeholder="URL de l'image (optionnel)">
+                        <button id="addWordBtn" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+                
+                <h6>Liste des mots:</h6>
+                <ul id="wordList" class="list-group">
+                    <!-- Les mots seront ajoutés ici dynamiquement -->
+                </ul>
+                
+                <div class="mt-3 d-flex justify-content-between flex-wrap">
+                    <button id="startBtn" class="btn btn-primary">Commencer la dictée</button>
+                    <button id="resetBtn" class="btn btn-danger">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clavier français -->
+        <div id="frenchKeyboard" class="french-keyboard">
+            <div class="keyboard-row">
+                <div class="keyboard-key" data-char="1">1</div>
+                <div class="keyboard-key" data-char="2">2</div>
+                <div class="keyboard-key" data-char="3">3</div>
+                <div class="keyboard-key" data-char="4">4</div>
+                <div class="keyboard-key" data-char="5">5</div>
+                <div class="keyboard-key" data-char="6">6</div>
+                <div class="keyboard-key" data-char="7">7</div>
+                <div class="keyboard-key" data-char="8">8</div>
+                <div class="keyboard-key" data-char="9">9</div>
+                <div class="keyboard-key" data-char="0">0</div>
+                <div class="keyboard-key" data-char="°">°</div>
+                <div class="keyboard-key" data-char="+">+</div>
+                <div class="keyboard-key special" data-action="backspace"><i class="bi bi-backspace"></i></div>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-key" data-char="a">a</div>
+                <div class="keyboard-key" data-char="z">z</div>
+                <div class="keyboard-key" data-char="e">e</div>
+                <div class="keyboard-key" data-char="r">r</div>
+                <div class="keyboard-key" data-char="t">t</div>
+                <div class="keyboard-key" data-char="y">y</div>
+                <div class="keyboard-key" data-char="u">u</div>
+                <div class="keyboard-key" data-char="i">i</div>
+                <div class="keyboard-key" data-char="o">o</div>
+                <div class="keyboard-key" data-char="p">p</div>
+                <div class="keyboard-key" data-char="^">^</div>
+                <div class="keyboard-key" data-char="$">$</div>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-key" data-char="q">q</div>
+                <div class="keyboard-key" data-char="s">s</div>
+                <div class="keyboard-key" data-char="d">d</div>
+                <div class="keyboard-key" data-char="f">f</div>
+                <div class="keyboard-key" data-char="g">g</div>
+                <div class="keyboard-key" data-char="h">h</div>
+                <div class="keyboard-key" data-char="j">j</div>
+                <div class="keyboard-key" data-char="k">k</div>
+                <div class="keyboard-key" data-char="l">l</div>
+                <div class="keyboard-key" data-char="m">m</div>
+                <div class="keyboard-key" data-char="ù">ù</div>
+                <div class="keyboard-key" data-char="*">*</div>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-key" data-char="<">&lt;</div>
+                <div class="keyboard-key" data-char="w">w</div>
+                <div class="keyboard-key" data-char="x">x</div>
+                <div class="keyboard-key" data-char="c">c</div>
+                <div class="keyboard-key" data-char="v">v</div>
+                <div class="keyboard-key" data-char="b">b</div>
+                <div class="keyboard-key" data-char="n">n</div>
+                <div class="keyboard-key" data-char=",">,</div>
+                <div class="keyboard-key" data-char=";">;</div>
+                <div class="keyboard-key" data-char=":">:</div>
+                <div class="keyboard-key" data-char="!">!</div>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-key special" data-action="shift"><i class="bi bi-arrow-up"></i></div>
+                <div class="keyboard-key" data-char="é">é</div>
+                <div class="keyboard-key" data-char="è">è</div>
+                <div class="keyboard-key" data-char="à">à</div>
+                <div class="keyboard-key" data-char="ç">ç</div>
+                <div class="keyboard-key" data-char="ê">ê</div>
+                <div class="keyboard-key" data-char="î">î</div>
+                <div class="keyboard-key" data-char="ô">ô</div>
+                <div class="keyboard-key" data-char="û">û</div>
+                <div class="keyboard-key" data-char="ë">ë</div>
+                <div class="keyboard-key" data-char="ï">ï</div>
+                <div class="keyboard-key" data-char="ü">ü</div>
+                <div class="keyboard-key special" data-action="shift"><i class="bi bi-arrow-up"></i></div>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-key special" data-action="space" class="space">Espace</div>
+                <div class="keyboard-key special" data-action="enter">Entrée</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            let words = [
+                { word: 'maison', imageUrl: 'https://via.placeholder.com/400x200?text=maison', selected: true },
+                { word: 'école', imageUrl: 'https://via.placeholder.com/400x200?text=école', selected: true },
+                { word: 'chat', imageUrl: 'https://via.placeholder.com/400x200?text=chat', selected: true },
+                { word: 'chien', imageUrl: 'https://via.placeholder.com/400x200?text=chien', selected: true },
+                { word: 'arbre', imageUrl: 'https://via.placeholder.com/400x200?text=arbre', selected: true }
+            ];
+            let currentWordIndex = 0;
+            let score = 0;
+            let dicteeStarted = false;
+            let shiftPressed = false;
+            let isWordRevealed = false; // Nouvelle variable pour suivre l'état de révélation
+            
+            // Éléments DOM
+            const wordDisplay = document.getElementById('wordDisplay');
+            const wordInput = document.getElementById('wordInput');
+            const wordImage = document.getElementById('wordImage');
+            const progressBar = document.getElementById('progressBar');
+            const currentProgress = document.getElementById('currentProgress');
+            const scoreElement = document.getElementById('score');
+            const wordList = document.getElementById('wordList');
+            const wordManagementSection = document.getElementById('wordManagementSection');
+            const toggleManagementBtn = document.getElementById('toggleManagementBtn');
+            const frenchKeyboard = document.getElementById('frenchKeyboard');
+            const showKeyboardBtn = document.getElementById('showKeyboardBtn');
+            const revealBtn = document.getElementById('revealBtn');
+            
+            // Boutons
+            const listenBtn = document.getElementById('listenBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const addWordBtn = document.getElementById('addWordBtn');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            // Initialisation
+            function initializeApp() {
+                updateWordList();
+                hideWord();
+                updateProgress();
+                
+                // Gestion de l'affichage/masquage de la section de gestion
+                toggleManagementBtn.addEventListener('click', function() {
+                    if (wordManagementSection.style.display === 'block') {
+                        wordManagementSection.style.display = 'none';
+                    } else {
+                        wordManagementSection.style.display = 'block';
+                    }
+                });
+                
+                // Gestion du clavier français
+                showKeyboardBtn.addEventListener('click', function() {
+                    if (frenchKeyboard.style.display === 'block') {
+                        frenchKeyboard.style.display = 'none';
+                    } else {
+                        frenchKeyboard.style.display = 'block';
+                    }
+                });
+                
+                // Gestion des touches du clavier virtuel
+                document.querySelectorAll('.keyboard-key[data-char]').forEach(key => {
+                    key.addEventListener('click', function() {
+                        const char = this.getAttribute('data-char');
+                        const currentPos = wordInput.selectionStart;
+                        const currentValue = wordInput.value;
+                        
+                        wordInput.value = currentValue.substring(0, currentPos) + char + currentValue.substring(currentPos);
+                        wordInput.focus();
+                        wordInput.setSelectionRange(currentPos + 1, currentPos + 1);
+                        
+                        // Vérifier la réponse après chaque caractère saisi
+                        checkAnswer();
+                    });
+                });
+                
+                document.querySelectorAll('.keyboard-key[data-action="backspace"]').forEach(key => {
+                    key.addEventListener('click', function() {
+                        const currentPos = wordInput.selectionStart;
+                        const currentValue = wordInput.value;
+                        
+                        if (currentPos > 0) {
+                            wordInput.value = currentValue.substring(0, currentPos - 1) + currentValue.substring(currentPos);
+                            wordInput.focus();
+                            wordInput.setSelectionRange(currentPos - 1, currentPos - 1);
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.keyboard-key[data-action="space"]').forEach(key => {
+                    key.addEventListener('click', function() {
+                        const currentPos = wordInput.selectionStart;
+                        const currentValue = wordInput.value;
+                        
+                        wordInput.value = currentValue.substring(0, currentPos) + ' ' + currentValue.substring(currentPos);
+                        wordInput.focus();
+                        wordInput.setSelectionRange(currentPos + 1, currentPos + 1);
+                    });
+                });
+                
+                document.querySelectorAll('.keyboard-key[data-action="enter"]').forEach(key => {
+                    key.addEventListener('click', function() {
+                        checkAnswer();
+                    });
+                });
+                
+                document.querySelectorAll('.keyboard-key[data-action="shift"]').forEach(key => {
+                    key.addEventListener('click', function() {
+                        shiftPressed = !shiftPressed;
+                        updateKeyboardCase();
+                    });
+                });
+            }
+            
+            function updateKeyboardCase() {
+                document.querySelectorAll('.keyboard-key[data-char]').forEach(key => {
+                    const char = key.getAttribute('data-char');
+                    if (char.length === 1 && /[a-z]/.test(char)) {
+                        key.textContent = shiftPressed ? char.toUpperCase() : char.toLowerCase();
+                    }
+                });
+            }
+            
+            // Fonctions principales
+            function displayWord(revealed = false) {
+                if (!dicteeStarted || currentWordIndex >= getSelectedWords().length) return;
+                
+                const currentWord = getSelectedWords()[currentWordIndex].word;
+                
+                if (revealed) {
+                    wordDisplay.textContent = currentWord;
+                    isWordRevealed = true;
+                    revealBtn.innerHTML = '<i class="bi bi-eye-slash"></i> Masquer';
+                } else {
+                    wordDisplay.textContent = '_'.repeat(currentWord.length);
+                    isWordRevealed = false;
+                    revealBtn.innerHTML = '<i class="bi bi-eye"></i> Révéler';
+                }
+                
+                // Afficher l'image associée ou l'image par défaut
+                wordImage.src = getSelectedWords()[currentWordIndex].imageUrl || 'https://via.placeholder.com/400x200?text=Image+du+mot';
+                
+                updateProgress();
+            }
+            
+            function hideWord() {
+                wordDisplay.textContent = '______';
+                wordInput.value = '';
+                isWordRevealed = false;
+                revealBtn.innerHTML = '<i class="bi bi-eye"></i> Révéler';
+                if (dicteeStarted && currentWordIndex < getSelectedWords().length) {
+                    wordImage.src = getSelectedWords()[currentWordIndex].imageUrl || 'https://via.placeholder.com/400x200?text=Image+du+mot';
+                } else {
+                    wordImage.src = 'https://via.placeholder.com/400x200?text=Image+du+mot';
+                }
+            }
+            
+            function toggleRevealWord() {
+                if (isWordRevealed) {
+                    displayWord(false); // Masquer le mot
+                } else {
+                    displayWord(true); // Révéler le mot
+                }
+            }
+            
+            function speakWord() {
+                if (!dicteeStarted || currentWordIndex >= getSelectedWords().length) return;
+                
+                const currentWord = getSelectedWords()[currentWordIndex].word;
+                const utterance = new SpeechSynthesisUtterance(currentWord);
+                utterance.lang = 'fr-FR';
+                speechSynthesis.speak(utterance);
+            }
+            
+            function speakMessage(message) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'fr-FR';
+                speechSynthesis.speak(utterance);
+            }
+            
+            function checkAnswer() {
+                if (!dicteeStarted || currentWordIndex >= getSelectedWords().length) return;
+                
+                const currentWord = getSelectedWords()[currentWordIndex].word;
+                const userInput = wordInput.value.trim().toLowerCase();
+                
+                if (userInput === currentWord.toLowerCase()) {
+                    score++;
+                    scoreElement.textContent = `Score: ${score}`;
+                    wordDisplay.textContent = currentWord;
+                    wordDisplay.classList.add('text-success');
+                    
+                    // Animation de félicitations
+                    createBalloons(10);
+                    
+                    // Message de félicitation
+                    const messages = [
+                        "Bravo! Excellent travail!",
+                        "Félicitations! Vous êtes formidable!",
+                        "Super! Continuez comme ça!",
+                        "Génial! Vous maîtrisez parfaitement ce mot!",
+                        "Parfait! Vous êtes un champion!"
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    speakMessage(randomMessage);
+                    
+                    setTimeout(() => {
+                        wordDisplay.classList.remove('text-success');
+                        moveToNextWord();
+                    }, 2000);
+                }
+            }
+            
+            function createBalloons(count) {
+                for (let i = 0; i < count; i++) {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    
+                    // Position aléatoire
+                    const left = Math.random() * 100;
+                    balloon.style.left = `${left}%`;
+                    balloon.style.bottom = '0';
+                    
+                    // Couleur aléatoire
+                    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    balloon.style.backgroundColor = color;
+                    
+                    // Taille aléatoire
+                    const size = 20 + Math.random() * 30;
+                    balloon.style.width = `${size}px`;
+                    balloon.style.height = `${size}px`;
+                    
+                    // Animation aléatoire
+                    const duration = 3 + Math.random() * 3;
+                    balloon.style.animationDuration = `${duration}s`;
+                    
+                    document.body.appendChild(balloon);
+                    
+                    // Supprimer le ballon après l'animation
+                    setTimeout(() => {
+                        balloon.remove();
+                    }, duration * 1000);
+                }
+            }
+            
+            function moveToNextWord() {
+                currentWordIndex++;
+                if (currentWordIndex < getSelectedWords().length) {
+                    hideWord();
+                    updateProgress();
+                } else {
+                    finishDictee();
+                }
+            }
+            
+            function updateProgress() {
+                const selectedWords = getSelectedWords();
+                if (selectedWords.length === 0) {
+                    progressBar.style.width = '0%';
+                    currentProgress.textContent = '0/0';
+                    return;
+                }
+                
+                const progress = ((currentWordIndex) / selectedWords.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                currentProgress.textContent = `${currentWordIndex}/${selectedWords.length}`;
+            }
+            
+            function finishDictee() {
+                dicteeStarted = false;
+                const selectedWords = getSelectedWords();
+                const message = `Dictée terminée! Votre score final est de ${score}/${selectedWords.length}`;
+                alert(message);
+                speakMessage(message);
+                resetDictee();
+            }
+            
+            function resetDictee() {
+                currentWordIndex = 0;
+                score = 0;
+                scoreElement.textContent = `Score: ${score}`;
+                hideWord();
+                updateProgress();
+                startBtn.textContent = 'Commencer la dictée';
+            }
+            
+            function updateWordList() {
+                wordList.innerHTML = '';
+                words.forEach((wordObj, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.innerHTML = `
+                        <div class="form-check">
+                            <input class="form-check-input word-checkbox" type="checkbox" id="word-${index}" ${wordObj.selected ? 'checked' : ''}>
+                            <label class="form-check-label" for="word-${index}">${wordObj.word}</label>
+                        </div>
+                        <button class="btn btn-sm btn-danger delete-word" data-index="${index}">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    `;
+                    wordList.appendChild(li);
+                    
+                    // Gestionnaire pour la case à cocher
+                    const checkbox = li.querySelector('.word-checkbox');
+                    checkbox.addEventListener('change', function() {
+                        words[index].selected = this.checked;
+                    });
+                });
+                
+                // Ajouter les gestionnaires d'événements pour supprimer les mots
+                document.querySelectorAll('.delete-word').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        words.splice(index, 1);
+                        updateWordList();
+                        
+                        if (dicteeStarted && index <= currentWordIndex) {
+                            currentWordIndex = Math.max(0, currentWordIndex - 1);
+                            hideWord();
+                            updateProgress();
+                        }
+                    });
+                });
+            }
+            
+            function getSelectedWords() {
+                return words.filter(word => word.selected);
+            }
+            
+            // Événements
+            listenBtn.addEventListener('click', speakWord);
+            
+            revealBtn.addEventListener('click', toggleRevealWord);
+            
+            nextBtn.addEventListener('click', function() {
+                if (dicteeStarted) {
+                    moveToNextWord();
+                }
+            });
+            
+            addWordBtn.addEventListener('click', function() {
+                const newWord = document.getElementById('newWord').value.trim();
+                const imageUrl = document.getElementById('imageUrl').value.trim();
+                
+                if (newWord) {
+                    words.push({ 
+                        word: newWord, 
+                        imageUrl: imageUrl || 'https://via.placeholder.com/400x200?text=' + encodeURIComponent(newWord),
+                        selected: true
+                    });
+                    document.getElementById('newWord').value = '';
+                    document.getElementById('imageUrl').value = '';
+                    updateWordList();
+                }
+            });
+            
+            startBtn.addEventListener('click', function() {
+                const selectedWords = getSelectedWords();
+                if (selectedWords.length === 0) {
+                    alert('Veuillez sélectionner au moins un mot avant de commencer la dictée.');
+                    return;
+                }
+                
+                if (!dicteeStarted) {
+                    dicteeStarted = true;
+                    currentWordIndex = 0;
+                    score = 0;
+                    scoreElement.textContent = `Score: ${score}`;
+                    hideWord();
+                    updateProgress();
+                    startBtn.textContent = 'Reprendre la dictée';
+                    speakWord();
+                }
+            });
+            
+            resetBtn.addEventListener('click', function() {
+                if (confirm('Êtes-vous sûr de vouloir réinitialiser la dictée?')) {
+                    dicteeStarted = false;
+                    resetDictee();
+                }
+            });
+            
+            // Support du clavier physique
+            wordInput.addEventListener('input', function() {
+                checkAnswer();
+            });
+            
+            document.addEventListener('keydown', function(event) {
+                if (!dicteeStarted) return;
+                
+                if (event.key === 'Enter') {
+                    checkAnswer();
+                    event.preventDefault();
+                }
+                
+                // Gestion de la touche Shift pour le clavier virtuel
+                if (event.key === 'Shift') {
+                    shiftPressed = true;
+                    updateKeyboardCase();
+                }
+            });
+            
+            document.addEventListener('keyup', function(event) {
+                if (event.key === 'Shift') {
+                    shiftPressed = false;
+                    updateKeyboardCase();
+                }
+            });
+            
+            // Initialiser l'application
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/* Styles personnalisés */
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    position: relative;
+    margin-right: 15px;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #0d6efd;
+    transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.header-shadow {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    background-color: #212529;
+    color: #fff;
+    padding: 2rem 0;
+}
+
+.footer-links a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: #fff;
+}
+
+.social-icons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background-color: #343a40;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+.social-icons a:hover {
+    background-color: #0d6efd;
+    transform: translateY(-3px);
+}
+
+/* Pour l'exemple - à supprimer dans votre projet final */
+.content-placeholder {
+    min-height: 500px;
+    padding: 50px 0;
+    background-color: #f8f9fa;
+}
