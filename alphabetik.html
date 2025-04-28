@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lecture de mots en français</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #f97316;
+      --light: #f8fafc;
+      --dark: #334155;
+      --border-radius: 12px;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .app-container {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+    }
+    
+    .app-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      box-shadow: var(--shadow);
+    }
+    
+    .app-title {
+      font-weight: 700;
+      margin: 0;
+      font-size: 2.5rem;
+      letter-spacing: -0.5px;
+    }
+    
+    .app-subtitle {
+      font-weight: 300;
+      opacity: 0.9;
+      margin-top: 0.5rem;
+    }
+    
+    .controls-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+    
+    .word-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 3rem 1.5rem;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+    }
+    
+    .word-display {
+      font-size: 3.5rem;
+      font-weight: 700;
+      min-height: 5rem;
+      color: var(--dark);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-custom {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-custom:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-custom-outline {
+      background-color: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-custom-outline:hover {
+      background-color: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-read {
+      background-color: var(--secondary);
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1.25rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-read:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      background-color: #f97316;
+      color: white;
+    }
+    
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+    
+    .custom-select {
+      border-radius: var(--border-radius);
+      border: 2px solid #e2e8f0;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .custom-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    .progress-container {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 50px;
+      height: 8px;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 50px;
+      transition: width 0.3s ease;
+    }
+    
+    .word-counter {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      .app-title {
+        font-size: 2rem;
+      }
+      
+      .word-display {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-header text-center">
+    <div class="container">
+      <h1 class="app-title">Lecture de mots en français</h1>
+      <p class="app-subtitle">Améliorez votre vocabulaire et votre prononciation</p>
+    </div>
+  </div>
+  
+  <div class="app-container">
+    <div class="controls-card">
+      <div class="row">
+        <div class="col-md-6">
+          <label for="themeSelect" class="form-label fw-bold">Thème</label>
+          <select id="themeSelect" class="form-select custom-select mb-3"></select>
+        </div>
+        <div class="col-md-6">
+          <label for="weekSelect" class="form-label fw-bold">Semaine</label>
+          <select id="weekSelect" class="form-select custom-select mb-3"></select>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+      </div>
+      
+      <div class="word-counter text-center" id="wordCounter">Mot 1 sur 10</div>
+      
+      <div class="navigation-buttons">
+        <button id="prevBtn" class="btn btn-custom-outline">
+          <i class="fas fa-arrow-left me-2"></i>Précédent
+        </button>
+        <button id="nextBtn" class="btn btn-custom">
+          Suivant<i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="word-card">
+      <div id="wordContainer" class="word-display mb-4"></div>
+      
+      <div class="d-flex justify-content-center">
+        <button id="readBtn" class="btn btn-read">
+          <i class="fas fa-volume-up me-2"></i>Lire
+        </button>
+      </div>
+      
+      <div class="text-center">
+        <button id="toggleWordBtn" class="btn btn-custom-outline">
+          <i class="fas fa-eye-slash me-2"></i>Masquer le mot
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let donnees = {};
+    let currentTheme = '';
+    let currentWeek = '';
+    let index = 0;
+    let visible = true;
+
+    const wordContainer = document.getElementById('wordContainer');
+    const toggleWordBtn = document.getElementById('toggleWordBtn');
+    const readBtn = document.getElementById('readBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const themeSelect = document.getElementById('themeSelect');
+    const weekSelect = document.getElementById('weekSelect');
+    const progressBar = document.getElementById('progressBar');
+    const wordCounter = document.getElementById('wordCounter');
+
+    async function chargerDonnees() {
+      try {
+        const response = await fetch('donnees.json');
+        donnees = await response.json();
+        currentTheme = Object.keys(donnees)[0];
+        currentWeek = Object.keys(donnees[currentTheme])[0];
+        initSelectors();
+        afficherMot();
+      } catch (error) {
+        console.error("Erreur lors du chargement des données :", error);
+        // Donnees de demo pour tester l'interface
+        donnees = {
+          "Vocabulaire quotidien": {
+            "Semaine 1": ["bonjour", "merci", "s'il vous plaît", "au revoir", "bienvenue"],
+            "Semaine 2": ["maison", "famille", "travail", "école", "magasin"]
+          },
+          "Verbes courants": {
+            "Semaine 1": ["être", "avoir", "faire", "aller", "venir"],
+            "Semaine 2": ["parler", "manger", "boire", "dormir", "écouter"]
+          }
+        };
+        currentTheme = Object.keys(donnees)[0];
+        currentWeek = Object.keys(donnees[currentTheme])[0];
+        initSelectors();
+        afficherMot();
+      }
+    }
+
+    function initSelectors() {
+      // Initialiser le menu des thèmes
+      themeSelect.innerHTML = '';
+      for (let theme in donnees) {
+        let option = document.createElement('option');
+        option.value = theme;
+        option.textContent = theme;
+        themeSelect.appendChild(option);
+      }
+      themeSelect.value = currentTheme;
+
+      updateWeekSelect();
+    }
+
+    function updateWeekSelect() {
+      weekSelect.innerHTML = '';
+      for (let week in donnees[currentTheme]) {
+        let option = document.createElement('option');
+        option.value = week;
+        option.textContent = week;
+        weekSelect.appendChild(option);
+      }
+      weekSelect.value = currentWeek;
+    }
+
+    function getCurrentWords() {
+      return donnees[currentTheme][currentWeek];
+    }
+
+    function afficherMot() {
+      const mots = getCurrentWords();
+      wordContainer.textContent = visible ? mots[index] : '••••••••';
+      
+      // Mettre à jour le bouton de masquage
+      if (visible) {
+        toggleWordBtn.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Masquer le mot';
+      } else {
+        toggleWordBtn.innerHTML = '<i class="fas fa-eye me-2"></i>Afficher le mot';
+      }
+      
+      // Mettre à jour la barre de progression
+      const progressPercentage = ((index + 1) / mots.length) * 100;
+      progressBar.style.width = `${progressPercentage}%`;
+      
+      // Mettre à jour le compteur de mots
+      wordCounter.textContent = `Mot ${index + 1} sur ${mots.length}`;
+      
+      // Activer/désactiver les boutons de navigation
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === mots.length - 1;
+      
+      // Ajouter un effet de transition
+      wordContainer.style.opacity = '0';
+      setTimeout(() => {
+        wordContainer.style.opacity = '1';
+      }, 100);
+    }
+
+    function lireMot() {
+      const mots = getCurrentWords();
+      const utterance = new SpeechSynthesisUtterance(mots[index]);
+      utterance.lang = 'fr-FR';
+      speechSynthesis.speak(utterance);
+      
+      // Animation de lecture
+      readBtn.classList.add('animate__animated', 'animate__pulse');
+      setTimeout(() => {
+        readBtn.classList.remove('animate__animated', 'animate__pulse');
+      }, 1000);
+    }
+
+    // Événements
+    toggleWordBtn.addEventListener('click', () => {
+      visible = !visible;
+      afficherMot();
+    });
+
+    readBtn.addEventListener('click', lireMot);
+
+    prevBtn.addEventListener('click', () => {
+      if (index > 0) {
+        index--;
+        afficherMot();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const mots = getCurrentWords();
+      if (index < mots.length - 1) {
+        index++;
+        afficherMot();
+      }
+    });
+
+    themeSelect.addEventListener('change', () => {
+      currentTheme = themeSelect.value;
+      currentWeek = Object.keys(donnees[currentTheme])[0];
+      updateWeekSelect();
+      index = 0;
+      afficherMot();
+    });
+
+    weekSelect.addEventListener('change', () => {
+      currentWeek = weekSelect.value;
+      index = 0;
+      afficherMot();
+    });
+
+    // Support des touches de clavier
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        nextBtn.click();
+      } else if (e.key === 'ArrowLeft') {
+        prevBtn.click();
+      } else if (e.key === ' ') {
+        readBtn.click();
+      } else if (e.key === 'h') {
+        toggleWordBtn.click();
+      }
+    });
+
+    // Initialisation
+    chargerDonnees();
+    
+    // Ajout d'une animation pour l'apparition de l'application
+    document.querySelector('.app-container').style.opacity = '0';
+    setTimeout(() => {
+      document.querySelector('.app-container').style.opacity = '1';
+    }, 300);
+  </script>
+</body>
+</html>

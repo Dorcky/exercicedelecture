@@ -1,0 +1,15 @@
+{
+    "theme 1": {
+      "semaine1": ["Chat", "Chien", "Poisson", "Oiseau"],
+      "semaine2": ["Pomme", "Poire", "Raisin", "Fraise"],
+      "semaine3": ["Rouge", "Bleu", "Vert", "Jaune"],
+      "semaine4": ["Petit", "Grand", "Long", "Court"]
+    },
+    "theme 7": {
+  "semaine1": ["bouche", "carte", "feu", "jeu", "nez", "oeil", "yeux", "tete", "brun", "brune", "vouloir"],
+  "semaine2": ["bras", "dame", "histoire", "joie", "main", "nuit", "oreille", "pied", "pluie", "roi", "visage", "devoir"],
+  "semaine3": ["fois", "lit", "livre", "terre", "nous aimons", "nous avons", "nous sommes", "regarder", "ne pas", "ne .. pas", "n`... pas"],
+  "semaine4": ["Chat", "Chatte", "Cheval", "Chevaux", "Chien", "Chienne", "Marche", "Montagne", "Cher", "Chère", "chercher"]
+}
+  }
+  
