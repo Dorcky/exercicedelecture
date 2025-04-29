@@ -9,7 +9,9 @@
   "semaine1": ["bouche", "carte", "feu", "jeu", "nez", "oeil", "yeux", "tete", "brun", "brune", "vouloir"],
   "semaine2": ["bras", "dame", "histoire", "joie", "main", "nuit", "oreille", "pied", "pluie", "roi", "visage", "devoir"],
   "semaine3": ["fois", "lit", "livre", "terre", "nous aimons", "nous avons", "nous sommes", "regarder", "ne pas", "ne .. pas", "n`... pas"],
-  "semaine4": ["Chat", "Chatte", "Cheval", "Chevaux", "Chien", "Chienne", "Marche", "Montagne", "Cher", "Chère", "chercher"]
+  "semaine4": ["Chat", "Chatte", "Cheval", "Chevaux", "Chien", "Chienne", "Marche", "Montagne", "Cher", "Chère", "chercher"],
+  "semainejaune": ["mill", "nill", "quill", "bille", "vill", "till", "fill", "pill", "brindille", "cheville", "papillon", "quille", "bequilles", "coquillage", "guenille", "gentille", "vanille", "grillon"]
 }
+
   }
   
