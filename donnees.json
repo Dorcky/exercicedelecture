@@ -11,7 +11,15 @@
   "semaine3": ["fois", "lit", "livre", "terre", "nous aimons", "nous avons", "nous sommes", "regarder", "ne pas", "ne .. pas", "n`... pas"],
   "semaine4": ["Chat", "Chatte", "Cheval", "Chevaux", "Chien", "Chienne", "Marche", "Montagne", "Cher", "Chère", "chercher"],
   "semainejaune": ["mill", "nill", "quill", "bille", "vill", "till", "fill", "pill", "brindille", "cheville", "papillon", "quille", "bequilles", "coquillage", "guenille", "gentille", "vanille", "grillon"]
+},
+
+"theme 8": {
+  "semaine1": ["Cheveu", "Forêt", "Heure", "h", "Papier", "Noir", "Noire", "Premier", "1er", "Première", "1re"],
+  "semaine2": ["Fenêtre", "Fleur", "Frère", "Phrase", "Sac", "Sœur", "Heureux", "Heureuse"],
+  "semaine3": ["Chambre", "Classe", "Cœur", "Pauvre", "Plein", "Pleine", "Vous Aimez", "Vous Avez", "Vous Êtes"],
+  "semaine4": ["Feuille", "Lettre", "Pays", "Personne", "Queue", "Train", "Ville", "Long", "Longue"]
 }
+
 
   }
   
