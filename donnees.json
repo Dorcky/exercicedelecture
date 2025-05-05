@@ -17,7 +17,10 @@
   "semaine1": ["Cheveu", "Forêt", "Heure", "h", "Papier", "Noir", "Noire", "Premier", "1er", "Première", "1re"],
   "semaine2": ["Fenêtre", "Fleur", "Frère", "Phrase", "Sac", "Sœur", "Heureux", "Heureuse"],
   "semaine3": ["Chambre", "Classe", "Cœur", "Pauvre", "Plein", "Pleine", "Vous Aimez", "Vous Avez", "Vous Êtes"],
-  "semaine4": ["Feuille", "Lettre", "Pays", "Personne", "Queue", "Train", "Ville", "Long", "Longue"]
+  "semaine4": ["Feuille", "Lettre", "Pays", "Personne", "Queue", "Train", "Ville", "Long", "Longue"],
+  "semaine_ien": ["Ien", "Mien", "Cien", "Rien", "Tien", "Vien", "Sien", "Lien", "Bien", "Chien", "Gien", "Le gardien", "Un musicien", "Un besoin", "Le magicien", "Le comédien", "Un indien", "Le mien", "Le magicien a fait apparaître un martien"],
+  "semaine_oin": ["Loin", "Coin", "Foin", "Moin", "Join", "Poin", "Toin", "Boin", "Soin", "Roin", "Un poing", "Moins", "Un besoin", "Un point", "Le coin", "Coincer", "Un témoin", "Une pointure", "Ces souliers sont trop pointus"]
+
 }
 
 
