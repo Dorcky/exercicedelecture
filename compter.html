@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compteur Vocal Professionnel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4cc9f0;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --success-color: #4bb543;
+      --warning-color: #f8961e;
+      --danger-color: #f94144;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding-top: 2rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-label {
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--secondary-color);
+      border-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+    
+    .btn-secondary {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+    
+    #progress-container {
+      margin-top: 1.5rem;
+      height: 10px;
+      background-color: #e9ecef;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      transition: width 0.3s ease;
+    }
+    
+    #status {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--primary-color);
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .settings-toggle {
+      color: var(--primary-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .settings-toggle:hover {
+      color: var(--secondary-color);
+    }
+    
+    .settings-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.5s ease-out;
+    }
+    
+    .settings-panel.show {
+      max-height: 500px;
+      transition: max-height 0.5s ease-in;
+    }
+    
+    .voice-option {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .voice-option:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .voice-option.selected {
+      background-color: rgba(67, 97, 238, 0.2);
+      font-weight: 600;
+    }
+    
+    .badge-count {
+      font-size: 0.9rem;
+      background-color: var(--primary-color);
+    }
+    
+    .input-error {
+      border-color: var(--danger-color) !important;
+      animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    .error-message {
+      color: var(--danger-color);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+    }
+    
+    .btn-icon {
+      margin-right: 8px;
+    }
+    
+    @media (max-width: 576px) {
+      .glass-card {
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass-card">
+          <h1 class="text-center"><i class="fas fa-microphone-alt me-2"></i>Compteur Vocal</h1>
+          
+          <form id="counterForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="start" class="form-label">Début</label>
+                <input type="number" class="form-control" id="start" min="-999" max="999" required aria-label="Nombre de départ">
+                <div class="error-message" id="start-error"></div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="end" class="form-label">Fin</label>
+                <input type="number" class="form-control" id="end" min="-999" max="999" required aria-label="Nombre de fin">
+                <div class="error-message" id="end-error"></div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Sens du comptage</label><br>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="direction" id="up" value="up" checked aria-label="Comptage croissant">
+                <label class="form-check-label" for="up"><i class="fas fa-arrow-up me-1"></i> Croissant</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="direction" id="down" value="down" aria-label="Comptage décroissant">
+                <label class="form-check-label" for="down"><i class="fas fa-arrow-down me-1"></i> Décroissant</label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Mode de lecture</label><br>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="mode" id="auto" value="auto" checked aria-label="Mode automatique">
+                <label class="form-check-label" for="auto"><i class="fas fa-robot me-1"></i> Automatique</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="mode" id="manual" value="manual" aria-label="Mode manuel">
+                <label class="form-check-label" for="manual"><i class="fas fa-hand-pointer me-1"></i> Manuel</label>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <button type="button" id="settingsToggle" class="btn btn-link settings-toggle">
+                <i class="fas fa-cog me-1"></i>Paramètres avancés
+              </button>
+              <span id="totalNumbers" class="badge badge-count rounded-pill bg-primary">0 nombre(s)</span>
+            </div>
+            
+            <div id="settingsPanel" class="settings-panel mb-3">
+              <div class="mb-3">
+                <label for="rate" class="form-label">Vitesse de lecture</label>
+                <input type="range" class="form-range" id="rate" min="0.5" max="2" step="0.1" value="1" aria-label="Vitesse de lecture">
+                <div class="d-flex justify-content-between">
+                  <small>Lente</small>
+                  <small>Normale</small>
+                  <small>Rapide</small>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="pauseDuration" class="form-label">Durée de pause (ms)</label>
+                <input type="number" class="form-control" id="pauseDuration" min="100" max="5000" value="500" aria-label="Durée de pause entre les nombres">
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Voix disponible</label>
+                <div id="voiceList" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                  <div class="text-muted text-center py-2">Chargement des voix...</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-center gap-3">
+              <button type="submit" id="startBtn" class="btn btn-primary btn-lg">
+                <i class="fas fa-play btn-icon"></i>Démarrer
+              </button>
+              <button type="button" id="stopBtn" class="btn btn-danger btn-lg" disabled>
+                <i class="fas fa-stop btn-icon"></i>Arrêter
+              </button>
+              <button type="button" id="nextBtn" class="btn btn-secondary btn-lg" disabled>
+                <i class="fas fa-step-forward btn-icon"></i>Suivant
+              </button>
+            </div>
+          </form>
+          
+          <div id="progress-container" class="mt-4">
+            <div id="progress-bar"></div>
+          </div>
+          
+          <div id="status" class="text-center" role="status" aria-live="polite">
+            Prêt à commencer le comptage
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const synth = window.speechSynthesis;
+      const counterForm = document.getElementById('counterForm');
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const statusEl = document.getElementById('status');
+      const progressBar = document.getElementById('progress-bar');
+      const totalNumbersEl = document.getElementById('totalNumbers');
+      const settingsToggle = document.getElementById('settingsToggle');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const voiceList = document.getElementById('voiceList');
+      
+      let numbers = [];
+      let currentIndex = 0;
+      let isCounting = false;
+      let voices = [];
+      let selectedVoice = null;
+      let manualMode = false;
+      
+      // Charger les voix disponibles
+      function loadVoices() {
+        voices = synth.getVoices();
+        voiceList.innerHTML = '';
+        
+        if (voices.length === 0) {
+          voiceList.innerHTML = '<div class="text-muted text-center py-2">Aucune voix disponible</div>';
+          return;
+        }
+        
+        // Filtrer les voix françaises ou anglaises
+        const frenchVoices = voices.filter(voice => 
+          voice.lang.includes('fr') || voice.lang.includes('en')
+        );
+        
+        if (frenchVoices.length === 0) {
+          voiceList.innerHTML = '<div class="text-muted text-center py-2">Aucune voix française trouvée</div>';
+          return;
+        }
+        
+        frenchVoices.forEach(voice => {
+          const voiceOption = document.createElement('div');
+          voiceOption.className = 'voice-option';
+          voiceOption.innerHTML = `
+            <input type="radio" name="voice" id="voice-${voice.name}" value="${voice.name}" 
+                   ${voice.default ? 'checked' : ''} class="me-2">
+            <label for="voice-${voice.name}" style="cursor:pointer;">
+              ${voice.name} (${voice.lang}) ${voice.default ? ' - Par défaut' : ''}
+            </label>
+          `;
+          
+          voiceOption.addEventListener('click', function() {
+            selectedVoice = voice;
+            document.querySelector(`#voice-${voice.name}`).checked = true;
+            document.querySelectorAll('.voice-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+          });
+          
+          if (voice.default) {
+            selectedVoice = voice;
+            voiceOption.classList.add('selected');
+          }
+          
+          voiceList.appendChild(voiceOption);
+        });
+      }
+      
+      // Si les voix ne sont pas encore chargées
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
+      
+      // Charger les voix dès que possible
+      loadVoices();
+      
+      // Basculer les paramètres avancés
+      settingsToggle.addEventListener('click', function() {
+        settingsPanel.classList.toggle('show');
+        const icon = this.querySelector('i');
+        if (settingsPanel.classList.contains('show')) {
+          icon.classList.remove('fa-cog');
+          icon.classList.add('fa-chevron-up');
+        } else {
+          icon.classList.remove('fa-chevron-up');
+          icon.classList.add('fa-cog');
+        }
+      });
+      
+      // Valider les entrées
+      function validateInputs() {
+        let isValid = true;
+        const start = parseInt(document.getElementById('start').value);
+        const end = parseInt(document.getElementById('end').value);
+        const direction = document.querySelector('input[name="direction"]:checked').value;
+        const startError = document.getElementById('start-error');
+        const endError = document.getElementById('end-error');
+        
+        // Réinitialiser les erreurs
+        document.getElementById('start').classList.remove('input-error');
+        document.getElementById('end').classList.remove('input-error');
+        startError.style.display = 'none';
+        endError.style.display = 'none';
+        
+        // Validation de base
+        if (isNaN(start)) {
+          document.getElementById('start').classList.add('input-error');
+          startError.textContent = "Veuillez entrer un nombre valide";
+          startError.style.display = 'block';
+          isValid = false;
+        } else if (start < -999 || start > 999) {
+          document.getElementById('start').classList.add('input-error');
+          startError.textContent = "Le nombre doit être entre -999 et 999";
+          startError.style.display = 'block';
+          isValid = false;
+        }
+        
+        if (isNaN(end)) {
+          document.getElementById('end').classList.add('input-error');
+          endError.textContent = "Veuillez entrer un nombre valide";
+          endError.style.display = 'block';
+          isValid = false;
+        } else if (end < -999 || end > 999) {
+          document.getElementById('end').classList.add('input-error');
+          endError.textContent = "Le nombre doit être entre -999 et 999";
+          endError.style.display = 'block';
+          isValid = false;
+        }
+        
+        // Validation directionnelle
+        if (isValid) {
+          if (direction === 'up' && start > end) {
+            document.getElementById('start').classList.add('input-error');
+            document.getElementById('end').classList.add('input-error');
+            startError.textContent = "En mode croissant, le début doit être ≤ à la fin";
+            endError.textContent = "En mode croissant, la fin doit être ≥ au début";
+            startError.style.display = 'block';
+            endError.style.display = 'block';
+            isValid = false;
+          } else if (direction === 'down' && start < end) {
+            document.getElementById('start').classList.add('input-error');
+            document.getElementById('end').classList.add('input-error');
+            startError.textContent = "En mode décroissant, le début doit être ≥ à la fin";
+            endError.textContent = "En mode décroissant, la fin doit être ≤ au début";
+            startError.style.display = 'block';
+            endError.style.display = 'block';
+            isValid = false;
+          }
+        }
+        
+        return isValid;
+      }
+      
+      // Parler un nombre
+      function speakNumber(number) {
+        if (synth.speaking) {
+          synth.cancel();
+        }
+        
+        const utterance = new SpeechSynthesisUtterance(number.toString());
+        utterance.lang = 'fr-FR';
+        utterance.rate = parseFloat(document.getElementById('rate').value);
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+        
+        synth.speak(utterance);
+        
+        // Mettre à jour l'interface
+        statusEl.textContent = `Nombre : ${number} (${currentIndex + 1}/${numbers.length})`;
+        const progress = ((currentIndex + 1) / numbers.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        
+        // Animation de pulse pendant la lecture
+        statusEl.classList.add('pulse-animation');
+        utterance.onend = function() {
+          statusEl.classList.remove('pulse-animation');
+          
+          if (!manualMode && isCounting) {
+            currentIndex++;
+            if (currentIndex < numbers.length) {
+              setTimeout(() => speakNumber(numbers[currentIndex]), 
+                         parseInt(document.getElementById('pauseDuration').value));
+            } else {
+              finishCounting();
+            }
+          }
+        };
+      }
+      
+      // Terminer le comptage
+      function finishCounting() {
+        isCounting = false;
+        statusEl.textContent = `Comptage terminé (${numbers.length} nombres lus)`;
+        progressBar.style.width = '100%';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        nextBtn.disabled = true;
+        counterForm.querySelectorAll('input').forEach(input => input.disabled = false);
+      }
+      
+      // Arrêter le comptage
+      function stopCounting() {
+        if (synth.speaking) {
+          synth.cancel();
+        }
+        
+        isCounting = false;
+        statusEl.textContent = `Comptage arrêté (${currentIndex} sur ${numbers.length} nombres lus)`;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        nextBtn.disabled = true;
+        counterForm.querySelectorAll('input').forEach(input => input.disabled = false);
+      }
+      
+      // Gérer le mode manuel
+      nextBtn.addEventListener('click', function() {
+        if (currentIndex < numbers.length - 1) {
+          currentIndex++;
+          speakNumber(numbers[currentIndex]);
+        } else {
+          finishCounting();
+        }
+      });
+      
+      // Gérer l'arrêt
+      stopBtn.addEventListener('click', stopCounting);
+      
+      // Gérer la soumission du formulaire
+      counterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateInputs()) {
+          return;
+        }
+        
+        const start = parseInt(document.getElementById('start').value);
+        const end = parseInt(document.getElementById('end').value);
+        const direction = document.querySelector('input[name="direction"]:checked').value;
+        manualMode = document.querySelector('input[name="mode"]:checked').value === 'manual';
+        
+        // Générer la séquence de nombres
+        numbers = [];
+        if (direction === 'up') {
+          for (let i = start; i <= end; i++) {
+            numbers.push(i);
+          }
+        } else {
+          for (let i = start; i >= end; i--) {
+            numbers.push(i);
+          }
+        }
+        
+        // Mettre à jour l'interface
+        currentIndex = 0;
+        isCounting = true;
+        totalNumbersEl.textContent = `${numbers.length} nombre(s)`;
+        progressBar.style.width = '0%';
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        nextBtn.disabled = !manualMode;
+        counterForm.querySelectorAll('input').forEach(input => input.disabled = true);
+        
+        // Commencer le comptage
+        speakNumber(numbers[currentIndex]);
+        
+        // Si mode automatique et un seul nombre, terminer immédiatement
+        if (!manualMode && numbers.length === 1) {
+          setTimeout(finishCounting, 1000);
+        }
+      });
+      
+      // Mettre à jour le compteur total lorsque les valeurs changent
+      document.getElementById('start').addEventListener('input', updateTotalNumbers);
+      document.getElementById('end').addEventListener('input', updateTotalNumbers);
+      document.querySelectorAll('input[name="direction"]').forEach(radio => {
+        radio.addEventListener('change', updateTotalNumbers);
+      });
+      
+      function updateTotalNumbers() {
+        if (validateInputs()) {
+          const start = parseInt(document.getElementById('start').value);
+          const end = parseInt(document.getElementById('end').value);
+          const direction = document.querySelector('input[name="direction"]:checked').value;
+          
+          let count = 0;
+          if (direction === 'up') {
+            count = start <= end ? end - start + 1 : 0;
+          } else {
+            count = start >= end ? start - end + 1 : 0;
+          }
+          
+          totalNumbersEl.textContent = `${count} nombre(s)`;
+        } else {
+          totalNumbersEl.textContent = '0 nombre(s)';
+        }
+      }
+      
+      // Initialiser la mise à jour du compteur
+      updateTotalNumbers();
+    });
+  </script>
+</body>
+</html>
